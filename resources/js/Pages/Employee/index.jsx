@@ -12,7 +12,6 @@ export default function Index({ employees, query, sortField, sortOrder }) {
 
     const handlePagination = (url) => {
         if (url) {
-            // Ensure that search, sort, and order parameters are included in pagination
             router.get(url, { search, sort: sort.field, order: sort.order });
         }
     };
