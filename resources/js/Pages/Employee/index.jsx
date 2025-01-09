@@ -1,21 +1,26 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Index({ employees, query }) {
+export default function Index({ employees, query, sortField, sortOrder }) {
     const [search, setSearch] = useState(query || '');
+    const [sort, setSort] = useState({ field: sortField || 'emp_no', order: sortOrder || 'asc' });
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get('/employees', { search });
+        router.get('/employees', { search, sort: sort.field, order: sort.order });
     };
 
     const handlePagination = (url) => {
         if (url) {
-            // Append the search query to the pagination URL
-            const updatedUrl = new URL(url);
-            updatedUrl.searchParams.set('search', search);
-            router.get(updatedUrl.toString());
+            // Ensure that search, sort, and order parameters are included in pagination
+            router.get(url, { search, sort: sort.field, order: sort.order });
         }
+    };
+
+    const handleSort = (field) => {
+        const order = sort.field === field && sort.order === 'asc' ? 'desc' : 'asc';
+        setSort({ field, order });  // Update the sort state
+        router.get('/employees', { search, sort: field, order }); // Trigger re-fetch with new sort
     };
 
     return (
@@ -43,10 +48,30 @@ export default function Index({ employees, query }) {
                     <table className="w-full border-collapse border border-gray-300 text-center">
                         <thead className="bg-gray-200">
                             <tr>
-                                <th className="border border-gray-300 px-4 py-2">ID</th>
-                                <th className="border border-gray-300 px-4 py-2">First Name</th>
-                                <th className="border border-gray-300 px-4 py-2">Last Name</th>
-                                <th className="border border-gray-300 px-4 py-2">Birth Date</th>
+                                <th
+                                    onClick={() => handleSort('emp_no')}
+                                    className="border border-gray-300 px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    ID {sort.field === 'emp_no' && (sort.order === 'asc' ? '↑' : '↓')}
+                                </th>
+                                <th
+                                    onClick={() => handleSort('first_name')}
+                                    className="border border-gray-300 px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    First Name {sort.field === 'first_name' && (sort.order === 'asc' ? '↑' : '↓')}
+                                </th>
+                                <th
+                                    onClick={() => handleSort('last_name')}
+                                    className="border border-gray-300 px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    Last Name {sort.field === 'last_name' && (sort.order === 'asc' ? '↑' : '↓')}
+                                </th>
+                                <th
+                                    onClick={() => handleSort('birth_date')}
+                                    className="border border-gray-300 px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    Birth Date {sort.field === 'birth_date' && (sort.order === 'asc' ? '↑' : '↓')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,7 +115,7 @@ export default function Index({ employees, query }) {
                     </div>
                 </div>
             ) : (
-                <p className="text-gray-500 text-center mt-6">Employees Not found.</p>
+                <p className="text-gray-500 text-center mt-6">Employees Not Found.</p>
             )}
         </div>
     );
